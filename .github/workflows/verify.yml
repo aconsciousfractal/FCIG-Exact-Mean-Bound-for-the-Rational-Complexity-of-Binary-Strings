@@ -1,0 +1,20 @@
+name: Exact finite premises
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -B scripts/check_manifest.py
+      - run: mkdir -p build
+      - run: python -B scripts/reproduce.py --output build/normal.json
+      - run: python -B -O scripts/reproduce.py --output build/optimized.json
+      - name: Compare deterministic replay outputs
+        run: python -c "from pathlib import Path; import sys; sys.exit(0 if Path('build/normal.json').read_bytes() == Path('build/optimized.json').read_bytes() else 1)"
+      - run: python -B -m unittest discover -s tests -v
+      - run: python -B -O -m unittest discover -s tests -v

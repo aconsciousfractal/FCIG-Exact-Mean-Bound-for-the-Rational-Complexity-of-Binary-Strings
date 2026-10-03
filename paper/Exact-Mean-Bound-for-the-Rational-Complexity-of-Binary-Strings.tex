@@ -1,0 +1,695 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array,microtype}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={An exact mean bound for the rational complexity of binary strings},pdfauthor={Oleksiy Babanskyy}}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\pos}[1]{\left[#1\right]_+}
+\newcommand{\odd}{\mathrm{odd}}
+\title{An exact mean bound for the rational complexity of binary strings}
+\author{Oleksiy Babanskyy}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+For a residue $r$ modulo $2^N$, let $R_N(r)$ be the least height
+$\max(|a|,b)$ of a rational representation $a\equiv rb\pmod{2^N}$
+with positive odd denominator $b$.
+We prove that the uniform mean of the ordinary, unrounded quantity
+$\log_2R_N(r)$ is at most $N/2$ for every $N\ge1$.
+This is the mean part of Question~3.1 in the 2026 survey of Lin, Xiao and Chen.
+The proof compares the product of the two lift heights with a truncated
+logarithmic excess at the parent modulus. Short lattice vectors with even
+denominator cover the large-height residues; completion in the actual odd
+coset bounds their contribution. A finite lattice sum, a two-prime sieve
+and an explicit primitive-point estimate close the inequality for parent
+length at least $26$. Integer certificates cover the remaining parent
+lengths $1,\ldots,25$. The variance question is left open.
+\end{abstract}
+
+\section{The problem and the result}
+Write a binary string as $s=(s_0,\ldots,s_{N-1})$, and identify it with
+$r=\sum_{i=0}^{N-1}s_i2^i$ modulo $2^N$. Define
+\begin{equation}\label{eq:def}
+ R_N(r)=\min_{\substack{a\equiv rb\pmod{2^N}\\b>0,\ b\ \odd}}
+                   \max(|a|,b),\qquad
+ \mathcal E_N=2^{-N}\sum_{r=0}^{2^N-1}\log_2R_N(r).
+\end{equation}
+This is the rational height underlying ordinary finite $2$-adic complexity.
+The logarithm is not rounded to an integer. The measure includes every
+string, including the zero string; it is not a measure on odd residues.
+
+\begin{theorem}\label{thm:main}
+For every integer $N\ge1$,
+\[
+                         \mathcal E_N\le \frac N2.
+\]
+\end{theorem}
+
+Tian and Qi studied this same mean and proved a weaker upper bound
+\cite[Theorem~3]{TQ}. Chen and Winterhof proved the lower bound
+$\mathcal E_N\ge N/2-1$ and an upper bound with a logarithmic error
+\cite[Theorems~2--3]{CWv1}. Their short primitive counts credit Tian--Qi;
+their growth recurrence credits Goresky--Klapper \cite{GK}.
+The exact upper in Theorem~\ref{thm:main} is explicitly asked for in
+\cite[Question~3.1]{LXC}, together with a separate variance problem.
+We answer only the mean part.
+
+Our proof uses elementary geometry of congruence lattices and finite
+integer certificates. It does not use a limiting distribution to infer
+an inequality at every length. Its computational premises are stated in
+Section~\ref{sec:finite} and checked by the accompanying dependency-free
+program. The uniform argument is a proof for all sufficiently large
+lengths, not an extrapolation of those certificates.
+
+\paragraph{Source and priority boundary.}
+For Chen--Winterhof's detailed statements we use the explicitly identified
+arXiv version~1 \cite{CWv1}. The final publication \cite{CWfinal} has been
+identified, but its full body has not been obtained for this paper. We do not assert a lemma-by-lemma identity of those versions.
+The July 2026 survey, which includes Chen as an author, explicitly poses
+the exact mean question after the final publication.
+No exact antecedent has been identified in the primary sources checked
+for this paper; this is not a certification of universal priority.
+Ren--Winterhof's recent symmetric complexity \cite{RW} minimizes also
+over a reversed string and is a different random variable.
+
+\paragraph{Notation.}
+All logarithms in the proof are natural. The subscript in $R_N$ denotes
+a length. When a parent modulus is $M=2^n$, abbreviate $R_M(r)=R_n(r)$;
+thus $R_{2M}$ denotes the child height $R_{n+1}$. Put
+\[
+ q=\sqrt M,\qquad s=q/\sqrt2,\qquad J=\lfloor n/2\rfloor.
+\]
+The convention $[x]_+=\max(x,0)$ will be used.
+A minimum in \eqref{eq:def} is primitive in $\Z^2$: its common divisor
+is odd and invertible modulo $2^N$, so division would otherwise lower
+its height. In particular $R_M(0)=1$ and $R_M(r)\le M/2$ for $M\ge2$.
+
+\section{The two lifts and a logarithmic budget}
+\begin{lemma}\label{lem:children}
+Let $M=2^n$, $n\ge1$. For a residue $r$ modulo $M$, put
+\[
+ h=R_M(r),\qquad H=\max\{R_{2M}(r),R_{2M}(r+M)\}.
+\]
+Then $\min\{R_{2M}(r),R_{2M}(r+M)\}=h$, and
+\begin{equation}\label{eq:product}
+                            hH\le\max(M,2h^2).
+\end{equation}
+\end{lemma}
+\begin{proof}
+The union of the two sets of child representations is exactly the set of
+parent representations, since an odd denominator is invertible modulo
+$2M$. Choose a primitive parent minimum $u=(a,b)$, $b>0$ odd.
+It selects a child $r_0$ with height $h$.
+Reflection allows $a\ge0$.
+
+Suppose first $a>0$. Integer solutions $v=(c,d)$ of
+$ad-bc=M$ form $v_0+ku$ by B\'ezout's identity. The restriction $d$ odd
+selects exactly one class of $k$ modulo $2$. Moreover
+\[
+ c\equiv(r_0+M)d\pmod{2M}.
+\]
+Indeed $a\equiv r_0b\pmod{2M}$ and $b^{-1}M\equiv M\pmod{2M}$,
+while $Md\equiv M$ for odd $d$. A negative $d$ can be oriented positive
+by negating $v$; its height and child are unchanged.
+
+Put $\tau=\min(a,b)$, $h=\max(a,b)$, $\sigma=a+b$ and
+$X=\max\{h,(M+2ab)/\sigma\}$.
+Parameterize the real determinant line by
+$(-M/\sigma,M/\sigma)+t(a,b)$.
+If $M\le h(h-\tau)$, then $X=h$. When $a=h$, the full interval
+$c\in[-h,h]$ gives $|d|=|(M+bc)/a|\le h$; its length in $t$ is $2$.
+When $b=h$, use the full interval $d\in[-h,h]$ instead.
+If $M\ge h(h-\tau)$, then $X=(M+2ab)/\sigma\ge h$. The points at
+$t=-2b/\sigma$ and $t=2a/\sigma$ are
+\[
+ \left(-X,\frac{M-2b^2}{\sigma}\right),\qquad
+ \left(\frac{-M+2a^2}{\sigma},X\right).
+\]
+Both belong to $[-X,X]^2$: the required conditions are
+$M\ge b(b-a)$ and $M\ge a(a-b)$, which follow from the case assumption.
+The closed segment between them has parameter length $2$.
+In either case it intersects the class $t_0+2\Z$.
+Thus the other child has height at most $X$.
+
+Writing $x=\tau/h$, we obtain
+\[
+ hH\le\max\left\{h^2,\frac{M+2h^2x}{1+x}\right\}
+       \le\max(M,2h^2).
+\]
+If $a=0$, primitivity forces $b=1$, the children are $0$ and $M$, and
+their heights are $1$ and $M$, so the same conclusion holds.
+Ties between parent minima need no special choice.
+\end{proof}
+
+Define the exact finite quantities
+\begin{equation}\label{eq:budgets}
+\begin{split}
+ C_M(t)&=\#\{r\bmod M:R_M(r)\le t\},\\
+ K_M&=\frac1M\sum_r\pos{\ln(R_M(r)/s)},\\
+ \mathcal D_M&=\frac1M\int_s^q C_M(t)\,\frac{dt}{t},\\
+ \mathcal L_M&=\frac1M\sum_r\pos{\ln(R_M(r)/q)}.
+\end{split}
+\end{equation}
+We reserve $D$ without a calligraphic letter for a dyadic content below.
+Taking logarithms in \eqref{eq:product}, and averaging over both children,
+gives
+\begin{equation}\label{eq:reduction}
+ \E_{r\bmod2M}\ln R_{2M}(r)\le \frac12\ln M+K_M.
+\end{equation}
+There is no induction hypothesis on the parent mean.
+
+For every $R>0$,
+\[
+ \pos{\ln(R/s)}
+ =\ln(q/s)-\int_s^q {\bf1}_{R\le t}\frac{dt}{t}
+             +\pos{\ln(R/q)}.
+\]
+Consequently
+\begin{equation}\label{eq:identity}
+ K_M=\frac12\ln2-\mathcal D_M+\mathcal L_M.
+\end{equation}
+It suffices to prove $K_M\le\frac12\ln2$ at every parent length.
+For large lengths we prove $\mathcal L_M<\mathcal D_M$.
+
+\section{Short even vectors and the actual odd coset}\label{sec:cusps}
+For $r\bmod M$ let
+\[
+ \Lambda_r=\{(A,B)\in\Z^2:A-rB\in M\Z\}.
+\]
+Its basis $(M,0),(r,1)$ has determinant $M$.
+
+\begin{lemma}\label{lem:certificate}
+If $R_M(r)>q$, there exist
+\[
+ D=2^j,\quad1\le j\le J,\quad b>0\ \odd,\quad
+ \gcd(a,b)=1,\quad D\max(|a|,b)\le q
+\]
+such that
+\begin{equation}\label{eq:contact}
+           a-rb=(M/D)\alpha_r,\qquad \alpha_r\ \odd.
+\end{equation}
+For each such triple, its cell $\mathcal C(D,a,b)$ of residues satisfying
+\eqref{eq:contact} has exactly $D/2$ elements.
+For each residue in that cell, $D(a,b)$ is primitive as an element of
+$\Lambda_r$.
+\end{lemma}
+\begin{proof}
+Minkowski's convex body theorem \cite{Cassels} in the square of radius
+$q+\varepsilon$ gives a nonzero lattice vector of height at most
+$q+\varepsilon$. Discreteness permits passage to the closed radius $q$.
+Choose a shortest nonzero vector. Its denominator is nonzero, since a
+nonzero horizontal vector has height at least $M>q$.
+Orient it positive. The hypothesis $R_M(r)>q$ forces its denominator
+even, and its numerator is then even as well.
+A common odd factor could be divided out while preserving lattice
+membership, contradicting minimality. Thus its content is $D=2^j\ge2$;
+write it as $D(a,b)$ with $\gcd(a,b)=1$.
+The congruence modulo $Q=M/D$, which is even, forces $b$ odd.
+If $\alpha_r=(a-rb)/Q$ were even, division by $2$ would again yield
+a shorter vector of $\Lambda_r$. This proves the asserted contact.
+
+There is one solution of $a-rb\equiv0\pmod Q$. Its $D$ lifts modulo $M$
+change $\alpha_r$ by $-bt$, $t\bmod D$. Exactly $D/2$ have odd contact.
+The coordinates of $D(a,b)$ in the displayed lattice basis are
+$(\alpha_r,Db)$. Their gcd is $1$: $\alpha_r$ is odd, and
+$\gcd(\alpha_r,b)=1$ follows from $\gcd(a,b)=1$ and $\gcd(Q,b)=1$.
+This is lattice primitivity, despite the even integer content.
+\end{proof}
+
+\begin{lemma}\label{lem:completion}
+On a cell $\mathcal C(D,a,b)$ put $A=D|a|$, $B=Db$. Then
+\begin{equation}\label{eq:X}
+ R_M(r)\le X:=\frac{M+AB}{A+B},\qquad X\ge q.
+\end{equation}
+On the axis $a=0,b=1$, the height is exactly $R_M(r)=M/D$.
+\end{lemma}
+\begin{proof}
+For $a>0$, lattice primitivity allows completion of $v=(A,B)$ to a
+basis with determinant $M$. Such completions $w=(c,d)$ satisfy
+\[
+ ad-bc=Q,\qquad ad\equiv Q\pmod b,\qquad
+                       \alpha_r d\equiv1\pmod D.
+\]
+The last two congruences give one class of odd $d$ modulo $B=Db$ by
+the Chinese remainder theorem. Invert $a$ only modulo $b$; no inversion
+modulo an even denominator is needed. For $b=1$ the first congruence
+is empty. All completions differ by a multiple of $v$.
+
+Put $x=M/(A+B)$. Let $d_-\le x<d_+=d_-+B$ be the adjacent denominators
+in this class, and write $\eta=x-d_-\in[0,B)$.
+On the determinant line, $c(d)=(Ad-M)/B$. The two heights are
+\begin{equation}\label{eq:adjacent}
+ \max(|c(d_-)|,|d_-|)=x+(A/B)\eta,\qquad
+ \max(|c(d_+)|,|d_+|)=x+B-\eta.
+\end{equation}
+For clarity, the sign checks use $A,B\le q$.
+If $d_-<0$ and $A<B$, then
+$(B-A)|d_-|\le(B-A)(B-x)\le B^2\le M$, so $-c(d_-)\ge|d_-|$;
+the case $A\ge B$ is immediate.
+At $d_+>x$, $-c(d_+)\le d_+$.
+If $A>B$, then $c(d_+)\le d_+$ follows from
+$(A-B)(x+B)\le M$, equivalent to $A^2-B^2\le2M$.
+The other sign cases follow directly from $d_-\le x<d_+$.
+The smaller expression in \eqref{eq:adjacent} is at most
+$x+AB/(A+B)=X$, since the two affine expressions meet at
+$\eta=B^2/(A+B)$.
+Negative odd denominators are oriented positive by negating both
+coordinates. Reflection handles $a<0$.
+Finally $X/q\ge1$ is equivalent to
+$(1-A/q)(1-B/q)\ge0$.
+
+If $a=0$, primitivity gives $b=1$ and $r=-Q\alpha_r$.
+Every marked numerator is a nonzero odd multiple of $Q$, so the height
+is at least $Q$.
+Take $c=-Q$ and a positive odd $d\le D-1$ representing
+$\alpha_r^{-1}\pmod D$. This has height $Q$, because $D\le q\le Q$.
+\end{proof}
+
+\begin{remark}
+Only coverage and the cell masses are needed for our upper bound.
+We do not require disjointness of the cells or replace their actual
+odd phases by continuous phase averages. The union bound below remains
+valid even without a uniqueness statement.
+\end{remark}
+
+Let $V=\{r\ne0:v_2(r)\ge\lceil n/2\rceil\}$.
+The axis cells are precisely these residues: for $D=2^j$ their valuation
+is $k=n-j$ and their height is $2^k$.
+This family is already present in Tian--Qi \cite[Lemma~4]{TQ}.
+Write $\mathcal L_V$ for its contribution to $\mathcal L_M$ and
+$\mathcal L_{\rm other}=\mathcal L_M-\mathcal L_V$.
+For $0<x,y\le1$ define
+\[
+ f(x,y)=\ln\frac{1+xy}{x+y},\qquad
+ P_f(T)=\sum_{\substack{1\le a,b\le T\\b\ \odd,\ \gcd(a,b)=1}}
+                                           f(a/T,b/T).
+\]
+The kernel is nonnegative. Every non-axis residue with height above $q$
+is covered by Lemma~\ref{lem:certificate}, and Lemma~\ref{lem:completion}
+bounds its energy by $f(D|a|/q,Db/q)$.
+Each cell has $D/2$ residues and both signs of $a$ give the weight $D$.
+Therefore, using an upper bound by a union of cells,
+\begin{equation}\label{eq:U}
+ \mathcal L_{\rm other}\le U_M:=\frac1M
+                         \sum_{j=1}^J2^jP_f(q/2^j).
+\end{equation}
+Including cells whose height is at most $q$ only enlarges this upper
+bound; all summands are nonnegative.
+
+\section{An explicit estimate of the lattice sum}
+Let
+\[
+ I=\int_{[0,1]^2}f(x,y)\,dx\,dy,\qquad
+ F(T)=\sum_{\substack{1\le a,b\le T\\b\ \odd}}f(a/T,b/T).
+\]
+The integral is finite: $0\le f(x,y)\le-\ln\max(x,y)$, so $I\le1/2$.
+
+\begin{lemma}\label{lem:grid}
+For every real $T>0$,
+\begin{equation}\label{eq:grid}
+                   \frac I2T^2-T\le F(T)\le\frac I2T^2,
+ \qquad I=\frac{\zeta(2)-1}{2}=\frac{\pi^2}{12}-\frac12.
+\end{equation}
+\end{lemma}
+\begin{proof}
+For fixed $0<x\le1$, extend $f(x,y)$ to $y\ge0$. Its derivatives satisfy
+\[
+ \partial_yf=\frac{x^2-1}{(1+xy)(x+y)}\le0,\qquad
+ \partial_y^2f=\frac1{(x+y)^2}-\frac{x^2}{(1+xy)^2}\ge0.
+\]
+The last assertion follows from $1+xy\ge x(x+y)$, also beyond $y=1$.
+Odd $b\le T$ are the midpoints of intervals
+$[(b-1)/T,(b+1)/T]$. Convexity gives
+\[
+ \frac2T\sum_{b\le T,\ b\ \odd} f(x,b/T)
+ \le\int_0^{Y_T}f(x,y)\,dy,\qquad
+ Y_T=\frac{2\lceil\lfloor T\rfloor/2\rceil}{T}.
+\]
+If $Y_T\le1$, the omitted portion is nonnegative.
+If $Y_T>1$, the added portion is nonpositive, because $f(x,y)\le0$
+for $y>1$. Thus this integral is at most
+$\Phi(x)=\int_0^1f(x,y)\,dy$.
+The function $\Phi$ is decreasing and nonnegative, so its right
+Riemann sum at $a/T$, $1\le a\le\lfloor T\rfloor$, is at most $TI$.
+This proves the upper bound for real $T$, including the last odd cell.
+
+For $T\ge1$, the clipped rectangles
+$[a/T,(a+1)/T]\times[b/T,(b+2)/T]$ with the same indices cover
+$[1/T,1]^2$ with disjoint interiors. Monotonicity bounds the integral
+there by $2F(T)/T^2$.
+The omitted vertical and horizontal strips have total integral at most
+$2/T$, using $f\le-\ln y$ and $f\le-\ln x$, respectively.
+This proves the lower bound. For $0<T<1$, $F(T)=0$ and the lower bound
+is nonpositive.
+
+For $z\ge1$, the area of the region $(1+xy)/(x+y)\ge z$ is
+\[
+ \mathcal A(z)=\int_0^{1/z}\frac{1-zx}{z-x}\,dx
+ =1-(z^2-1)\ln\frac{z^2}{z^2-1}
+ =\sum_{k\ge1}\frac{z^{-2k}}{k(k+1)}.
+\]
+The endpoint $z=1$ is interpreted by a limit.
+Layer cake and Tonelli's theorem give
+\[
+ I=\int_1^\infty\mathcal A(z)\,\frac{dz}{z}
+   =\frac12\sum_{k\ge1}\frac1{k^2(k+1)}
+   =\frac{\zeta(2)-1}{2}.
+\]
+The last expression uses
+$1/(k^2(k+1))=1/k^2-1/k+1/(k+1)$ and Euler's classical
+evaluation $\zeta(2)=\pi^2/6$.
+\end{proof}
+
+A primitive pair cannot have either $3$ or $5$ as a common divisor.
+Since $f\ge0$, inclusion--exclusion in the larger set which excludes
+only those two common divisors gives
+\[
+ P_f(T)\le F(T)-F(T/3)-F(T/5)+F(T/15).
+\]
+Dividing by an odd common divisor preserves the odd denominator.
+Using the upper bound in \eqref{eq:grid} in the positive terms and
+the lower bound in the negative terms yields
+\[
+ P_f(T)\le\frac{32I}{75}T^2+\frac8{15}T.
+\]
+This includes scaled radii smaller than $1$.
+Substitution in \eqref{eq:U} gives the uniform finite estimate
+\begin{equation}\label{eq:tail}
+ \mathcal L_{\rm other}\le
+ \frac{32I}{75}(1-2^{-J})+\frac{8J}{15q}.
+\end{equation}
+
+\section{Central credit and the infinite range}
+For integer $T\ge1$, define the signed primitive count, with the axis once,
+\[
+ A(T)=\#\{(a,b):|a|\le T,\ 1\le b\le T,\ b\ \odd,\ \gcd(a,b)=1\}.
+\]
+\begin{lemma}\label{lem:count}
+For every integer $T\ge1$,
+\begin{equation}\label{eq:count}
+ A(T)\ge\frac8{\pi^2}T^2-\frac34T\ln T-\frac{11}4T-\frac14.
+\end{equation}
+For $n\ge2$, $T_0=\lfloor q/\sqrt2\rfloor$ satisfies
+$C_M(T_0)=A(T_0)$, and
+\begin{equation}\label{eq:central}
+ \mathcal D_M\ge\frac{2\ln2}{\pi^2}
+ -\frac{4\sqrt2\ln2/\pi^2+
+       (\ln2/(2\sqrt2))((3/4)\ln q+11/4)}q
+ -\frac{\ln2}{8q^2}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+M\"obius inversion over odd common divisors gives the exact formula
+\begin{equation}\label{eq:mobius}
+ A(T)=\sum_{\substack{g\le T\\g\ \odd}}
+       \mu(g)(2\lfloor T/g\rfloor+1)
+                   \left\lceil\frac{\lfloor T/g\rfloor}{2}\right\rceil.
+\end{equation}
+For $l=\lfloor x\rfloor$ the raw count
+$B(l)=(2l+1)\lceil l/2\rceil$ equals $l^2+l/2$ when $l$ is even and
+$l^2+3l/2+1/2$ when it is odd. Hence
+$|B(l)-x^2|\le3x/2+1/2$.
+Also
+\[
+ \sum_{\substack{g\le T\\g\ \odd}}\frac1g\le1+\frac12\ln T,
+ \qquad \#\{g\le T:g\ \odd\}\le(T+1)/2.
+\]
+For the first inequality,
+$1/(2k+1)\le\frac12\ln((2k+1)/(2k-1))$ for $k\ge1$ telescopes.
+The raw error in \eqref{eq:mobius} is at most
+$(3/4)T\ln T+(7/4)T+1/4$.
+The absolutely convergent Euler product gives
+$\sum_{g\ \odd}\mu(g)/g^2=8/\pi^2$; truncating it at $T$ costs at most
+$T^2\sum_{g>T}g^{-2}\le T$.
+This proves \eqref{eq:count}.
+
+Two distinct primitive representations in the $T_0$ box of one residue
+have a nonzero determinant divisible by $M$, unless they coincide.
+The determinant has absolute value at most $2T_0B_0$, where $B_0$
+is the largest odd integer at most $T_0$.
+If $2T_0^2<M$, this is less than $M$.
+If $2T_0^2=M$ and $n\ge2$, $T_0$ is a power of $2$ and is even, so
+$B_0=T_0-1$ and the strict inequality still holds.
+A zero determinant gives the same primitive fraction with positive
+denominator. Thus the residue map is injective; every covered residue
+has a primitive representation in the box, so $C_M(T_0)=A(T_0)$.
+The excluded case $n=1$ has the collision $(1,1),(-1,1)$.
+
+By monotonicity $\mathcal D_M\ge(\ln2)/(2M)A(T_0)$.
+Use $T_0^2\ge q^2/2-\sqrt2q$,
+$T_0\ln T_0\le(q/\sqrt2)\ln q$ and $T_0\le q/\sqrt2$ in
+\eqref{eq:count}. This yields \eqref{eq:central}.
+\end{proof}
+
+The axis mass at valuation $k$ is $2^{-k-1}$. Consequently
+\begin{equation}\label{eq:axis}
+ \frac{\mathcal L_V}{\ln2}
+ =\sum_{k=\lceil n/2\rceil}^{n-1}2^{-k-1}(k-n/2)
+ =
+ \begin{cases}
+ 2^{-\ell}-(\ell+1)2^{-2\ell},&n=2\ell,\ \ell\ge1,\\
+ 3\,2^{-\ell-2}-(2\ell+3)2^{-2\ell-2},&n=2\ell+1,\ \ell\ge0.
+ \end{cases}
+\end{equation}
+In particular $\mathcal L_V\le\sqrt2\ln2/q$ for all $n\ge1$.
+These are finite geometric sums, including the zero energies at $n=1,2$.
+
+\begin{proposition}\label{prop:cutoff}
+For every parent length $n\ge26$,
+$\mathcal L_M<\mathcal D_M$, hence $K_M<\frac12\ln2$.
+\end{proposition}
+\begin{proof}
+Put
+\[
+ c=\frac{32I}{75}=\frac{16}{75}\left(\frac{\pi^2}{6}-1\right),
+ \qquad \delta=\frac{2\ln2}{\pi^2}-c.
+\]
+Equations \eqref{eq:tail}, \eqref{eq:central}, \eqref{eq:axis}, discarding
+the favorable term $-c2^{-J}$, give
+$\mathcal D_M-\mathcal L_M\ge\delta-E(q,J)$, where
+\[
+ E(q,J)=\frac{8J/15+4\sqrt2\ln2/\pi^2+
+       (\ln2/(2\sqrt2))((3/4)\ln q+11/4)+\sqrt2\ln2}{q}
+                   +\frac{\ln2}{8q^2}.
+\]
+Use $3<\pi<22/7$, $1<\sqrt2<3/2$, and
+$\ln2>2/3+2/81=56/81$ from the positive atanh series. Then
+\[
+ \delta>\frac{1372}{9801}-\frac{304}{2205}
+        =\frac{45756}{21611205}>\frac1{500}.
+\]
+Since $q\ge2^J$ and $\ln q<J+1$, the same elementary bounds give
+\[
+ E(q,J)\le
+ \left(\frac{109}{120}J+\frac{47}{12}\right)2^{-J}
+                   +\frac18\,2^{-2J}.
+\]
+At $J=13$ the right side is
+$629/327680+1/536870912<1/520+1/13000=1/500$.
+Both terms decrease for $J\ge13$; for the first,
+$aJ+b>a$ with $a=109/120$, $b=47/12$.
+Thus $n\ge26$ implies $E<1/500<\delta$.
+\end{proof}
+
+\section{Finite certificates and completion of the proof}\label{sec:finite}
+The remaining premise is $K_{2^n}\le\frac12\ln2$ for $1\le n\le25$.
+There are two different finite interfaces, described here so the computation
+has an exact mathematical meaning. No decision uses floating logarithms.
+
+For $n=1,\ldots,12$, certificates give the height $h_r$ and a primitive
+witness $(a_r,b_r)$ for every residue. The checker verifies
+$b_r>0$ odd, $a_r\equiv rb_r$, and
+$\max(|a_r|,b_r)=h_r$. To prove minimality, for every positive odd $b<h_r$
+it computes the least absolute representative of $rb\bmod M$ and
+checks that it is at least $h_r$. This excludes every improving pair.
+Let $c_n=\#\{r:2h_r^2>M\}$ and
+$P_n=\prod_{2h_r^2>M}h_r^2$. Then the required comparison is exactly
+\begin{equation}\label{eq:Kinteger}
+                P_n\le 2^{\,M+(n-1)c_n}.
+\end{equation}
+This follows by exponentiating $2MK_M\le M\ln2$.
+The full domain has $\sum_{n=1}^{12}2^n=8190$ minima.
+For diagnostic support, the checker also verifies
+$\prod_r h_r^2\le M^M$, but \eqref{eq:Kinteger} is the premise used
+with the child lemma.
+
+For $n=13,\ldots,25$, set $T_0=\lfloor\sqrt{M/2}\rfloor$ and compute
+$A=A(T_0)$ exactly by \eqref{eq:mobius}. Put
+\[
+ V_2=\sum_{\substack{0\le k<n\\2k>n}}
+                2^{n-k-1}(2k-n)=\frac{2M\mathcal L_V}{\ln2},
+ \qquad
+ x_{D,a,b}=\frac{(M+D^2ab)^2}{MD^2(a+b)^2}\ge1.
+\]
+Thus $2MU_M=\sum_{D,a,b}D\ln x_{D,a,b}$, with
+$D=2^j$, $1\le j\le J$, $1\le a,b\le q/D$, $b$ odd, $\gcd(a,b)=1$.
+Using $S=2^{40}$, let $\ell^+(x)\ge S\ln x$ and
+$\ell^-_2\le S\ln2$ be the integer bounds of
+Appendix~\ref{app:logs}. The sufficient certificate inequality is
+\begin{equation}\label{eq:bridge}
+ \sum_{D,a,b}D\ell^+(x_{D,a,b})\le(A-V_2)\ell^-_2,\qquad A>V_2.
+\end{equation}
+Indeed \eqref{eq:bridge} implies
+$U_M+\mathcal L_V\le A\ln2/(2M)\le\mathcal D_M$.
+The integer margin, right side minus left side, is listed below.
+It is a scaled certificate margin, not the exact real difference
+$\mathcal D_M-\mathcal L_M$.
+
+\begin{center}
+\begin{tabular}{rr@{\qquad}rr}
+\toprule
+Parent $n$&Integer margin&Parent $n$&Integer margin\\
+\midrule
+13&200913119387100&20&22717214856196764\\
+14&343712368064520&21&45370620212212808\\
+15&778422546045060&22&90744127844519936\\
+16&1668697844541872&23&181329491713437076\\
+17&2824453720758008&24&359749179298450700\\
+18&5916038348384600&25&720718942077388912\\
+19&11572174724235024&&\\
+\bottomrule
+\end{tabular}
+\end{center}
+The fixed panel contains $9\,068\,656$ positive primitive pairs, out of
+$11\,182\,008$ raw pairs. The input and replay map in the companion separate
+these essential certificates from later diagnostic controls.
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+The small certificates prove the sufficient bound on $K_M$ for
+parents $n=1,\ldots,12$; the directed-log certificates prove it for
+$n=13,\ldots,25$.
+Proposition~\ref{prop:cutoff} proves it for $n\ge26$.
+Equation~\eqref{eq:reduction} therefore gives
+$\E\ln R_N\le(N/2)\ln2$ for every $N\ge2$, using parent length $n=N-1$.
+For $N=1$, both residues have height $1$. Divide by $\ln2$.
+\end{proof}
+
+\section{Scope, reproducibility and remaining questions}
+The theorem concerns the ordinary mean over all finite binary strings.
+It gives no upper bound for every prescribed infinite $2$-adic number
+and no statement about all Collatz trajectories.
+The variance part of \cite[Question~3.1]{LXC}, sharper constants, and
+extensions to other bases are not proved here.
+
+The structural ingredient is the compensation between the two dyadic
+lifts, followed by an upper bound in the actual odd completion class.
+B\'ezout, Minkowski, M\"obius inversion, Euler products, convexity and
+Tonelli are classical tools. The short count and high-valuation family
+have explicit antecedents credited above.
+The contribution is the exact mean bound and the estimates
+which close its sign. Priority remains a separate source question.
+
+The companion consists of this standalone source, a rendered PDF,
+\path{companion/verify_mean.py}, \path{companion/finite_certificates.json}, a claim
+map and reproduction instructions. From the repository root run
+\begin{quote}\ttfamily
+python -B scripts/reproduce.py\\
+python -B -O scripts/reproduce.py
+\end{quote}
+The two runs must produce the same deterministic mathematical JSON.
+The checker verifies level coverage, witnesses and minima, exact products,
+directed-log sums, populations and margins, with explicit failures that
+remain active under Python optimization.
+It checks only the finite premises; reading the lemmas above is necessary
+to assess the all-length proof.
+The source compiles independently of the research reports and bibliography
+databases.
+
+\paragraph{AI assistance.}
+OpenAI GPT models assisted mathematical exploration, proof criticism,
+source comparison, editing and reproducibility checks.
+The AI review passes shared exposure to the research material; they do
+not constitute independent human peer review or formal verification.
+The author retains responsibility for the arguments and attributions.
+
+\appendix
+\section{Directed logarithms using integer arithmetic}\label{app:logs}
+We specify the rounding used in \eqref{eq:bridge}.
+For a rational $v=u/w$ with $1\le v\le2$ let
+$z=(u-w)/(u+w)\in[0,1/3]$. Then
+\[
+ \ln v=2\sum_{j=0}^{11}\frac{z^{2j+1}}{2j+1}
+              +2\sum_{j=12}^\infty\frac{z^{2j+1}}{2j+1}.
+\]
+To compute an upper, replace $Sz$ by its ceiling, compute its square
+divided by $S$ with upward rounding, start the scaled power with that
+ceiling, and at each step round both division by $2j+1$ and the
+multiplication by the scaled square divided by $S$ upwards.
+Twice the twelve-term sum is an upper for the partial sum.
+The exact tail, using $z\le1/2$, is bounded by
+\[
+ \frac{2z^{25}}{25(1-z^2)}
+                  \le\frac8{3\cdot25\cdot2^{25}}.
+\]
+Add the integer ceiling of $8S/(3\cdot25\cdot2^{25})$.
+For a lower, use downward rounding at every step and omit the
+nonnegative remainder.
+For $v=1$, return exactly zero.
+These rules give a lower $\ell^-_2$ and upper $\ell^+_2$ for $S\ln2$.
+
+For an arbitrary rational $x=u/w\ge1$, find the unique integer $k\ge0$
+with $2^kw\le u<2^{k+1}w$, by integer bit lengths and a comparison.
+Apply the unit-interval upper to $u/(2^kw)$ and add $k\ell^+_2$.
+Every operation is an integer comparison, product, floor or ceiling.
+Since all rounding maps are monotone on nonnegative inputs, the computed
+scaled powers bound the true scaled powers by induction.
+The uniform tail bounds the true analytic remainder; it does not assume
+that an upward-rounded approximation of $z$ still equals $z$.
+This proves the directed inequalities used by every summand of the
+finite bridge.
+
+\begin{thebibliography}{9}
+\bibitem{TQ}
+T. Tian and W.-F. Qi,
+Expected values for the rational complexity of finite binary sequences,
+\emph{Designs, Codes and Cryptography} \textbf{55} (2010), 65--79.
+\href{https://doi.org/10.1007/s10623-009-9331-x}{doi:10.1007/s10623-009-9331-x}.
+\bibitem{CWv1}
+Z. Chen and A. Winterhof,
+Probabilistic results on the 2-adic complexity,
+arXiv:2501.16785v1, 28 January 2025.
+\href{https://arxiv.org/abs/2501.16785v1}{arXiv version 1}.
+Detailed theorem locators in this manuscript refer to this version.
+\bibitem{CWfinal}
+Z. Chen and A. Winterhof,
+Probabilistic results on the 2-adic complexity,
+\emph{Designs, Codes and Cryptography} \textbf{93} (2025), 2191--2203.
+\href{https://doi.org/10.1007/s10623-025-01592-1}{doi:10.1007/s10623-025-01592-1}.
+Version of record identified; detailed theorem locators above refer to arXiv v1.
+\bibitem{LXC}
+H. Lin, L. Xiao and Z. Chen,
+A brief view on the linear and 2-adic complexities of pseudorandom binary sequences,
+\emph{AIMS Mathematics} \textbf{11}(7) (2026), 20267--20290.
+\href{https://doi.org/10.3934/math.2026823}{doi:10.3934/math.2026823}.
+\bibitem{RW}
+Y. Ren and A. Winterhof,
+Symmetric measures of pseudorandomness for binary sequences,
+arXiv:2603.23166v1, 24 March 2026.
+\href{https://arxiv.org/abs/2603.23166v1}{arXiv version 1}.
+\bibitem{GK}
+M. Goresky and A. Klapper,
+\emph{Algebraic Shift Register Sequences}, Cambridge University Press, 2012.
+\href{https://doi.org/10.1017/CBO9781139057448}{doi:10.1017/CBO9781139057448}.
+Growth lemma cited as Lemma~18.5.1 in \cite{CWv1}.
+Public author draft, 14 October 2009, Section~21.5.a,
+Lemma~21.5.1:
+\href{https://www.cs.uky.edu/~klapper/pdf/algebraic.pdf}{author draft}.
+Draft and published numbering are not identified here.
+\bibitem{Cassels}
+J. W. S. Cassels,
+\emph{An Introduction to the Geometry of Numbers},
+Springer, 1997 reprint, Chapter~III, Section~1 (Minkowski's convex body theorem).
+\href{https://doi.org/10.1007/978-3-642-62035-5_4}{doi:10.1007/978-3-642-62035-5\_4}.
+\end{thebibliography}
+\end{document}
+

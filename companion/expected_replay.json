@@ -1,0 +1,33 @@
+{
+  "all_N_proved_by_checker_alone": false,
+  "bridge": {
+    "all_margins_positive": true,
+    "parent_levels": 13,
+    "positive_primitive_pairs": 9068656,
+    "raw_pairs": 11182008
+  },
+  "certificate_sha256": "7f04c4d46517804fa5c4910a99a6d49fbcc7efeaded3d3e1788bd42ce82deb47",
+  "cutoff": {
+    "delta_lower": "5084/2401245",
+    "error_at_J13_upper": "5152773/2684354560",
+    "parent_n_min": 26,
+    "scope": "rational comparisons only; analytic estimates require manuscript proof"
+  },
+  "negative_controls_rejected": [
+    "missing",
+    "duplicate",
+    "witness",
+    "height",
+    "margin",
+    "population",
+    "flag"
+  ],
+  "novelty_certified": false,
+  "script_sha256": "ff63b553f42411f06e5ac85b5b7b926637f393dc096dabc4e65e6eb5b53ab983",
+  "small": {
+    "excluded_denominators": 187309,
+    "minima": 8190,
+    "parent_levels": 12
+  },
+  "status": "PASS_FINITE_PREMISES"
+}
