@@ -4,7 +4,7 @@
 \usepackage[margin=25mm]{geometry}
 \usepackage{amsmath,amssymb,amsthm,booktabs,array,microtype}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={An exact mean bound for the rational complexity of binary strings},pdfauthor={Oleksiy Babanskyy}}
+\hypersetup{pdftitle={Rational complexity of binary strings: exact mean, finite distribution and logarithmic variance},pdfauthor={Oleksiy Babanskyy}}
 \numberwithin{equation}{section}
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -15,7 +15,7 @@
 \newcommand{\Z}{\mathbb Z}
 \newcommand{\pos}[1]{\left[#1\right]_+}
 \newcommand{\odd}{\mathrm{odd}}
-\title{An exact mean bound for the rational complexity of binary strings}
+\title{Rational complexity of binary strings: exact mean, finite distribution and logarithmic variance}
 \author{Oleksiy Babanskyy}
 \date{}
 \begin{document}
@@ -33,10 +33,16 @@ denominator cover the large-height residues; completion in the actual odd
 coset bounds their contribution. A finite lattice sum, a two-prime sieve
 and an explicit primitive-point estimate close the inequality for parent
 length at least $26$. Integer certificates cover the remaining parent
-lengths $1,\ldots,25$. The variance question is left open.
+lengths $1,\ldots,25$. We also derive the complete finite distribution,
+hence an exact finite arithmetic-logarithmic formula for the logarithmic
+variance. A marked-lattice limit identifies the normalized height with
+a published Boca--Gologan law and yields the limiting logarithmic
+variance $0.892302571204274625294755\ldots$. The raw-height mean and
+limiting Jensen gap are evaluated. A batched histogram algorithm uses
+$O(N2^N)$ arithmetic operations and $O(2^N)$ integer storage slots.
 \end{abstract}
 
-\section{The problem and the result}
+\section{The problem and the results}
 Write a binary string as $s=(s_0,\ldots,s_{N-1})$, and identify it with
 $r=\sum_{i=0}^{N-1}s_i2^i$ modulo $2^N$. Define
 \begin{equation}\label{eq:def}
@@ -62,14 +68,33 @@ $\mathcal E_N\ge N/2-1$ and an upper bound with a logarithmic error
 their growth recurrence credits Goresky--Klapper \cite{GK}.
 The exact upper in Theorem~\ref{thm:main} is explicitly asked for in
 \cite[Question~3.1]{LXC}, together with a separate variance problem.
-We answer only the mean part.
+We give the exact mean bound, a finite formula for the logarithmic
+variance, and its evaluated limit. The finite formula is a bounded
+arithmetic sum involving logarithms, not a short elementary expression
+in $N$.
 
-Our proof uses elementary geometry of congruence lattices and finite
+The exact-mean proof uses elementary geometry of congruence lattices and finite
 integer certificates. It does not use a limiting distribution to infer
 an inequality at every length. Its computational premises are stated in
 Section~\ref{sec:finite} and checked by the accompanying dependency-free
 program. The uniform argument is a proof for all sufficiently large
 lengths, not an extrapolation of those certificates.
+
+Sections~\ref{sec:law}--\ref{sec:algorithm} give the complete finite
+distribution, moment sums and a batched histogram algorithm. For
+$Z_N=R_N/2^{N/2}$, Sections~\ref{sec:bridge}--\ref{sec:BG} prove a
+marked-lattice limit and identify its survival as $G_2(t^2)$, where
+$G_2$ is the published Boca--Gologan law. Section~\ref{sec:moments}
+evaluates its logarithmic moments and transfers them to binary strings:
+\[
+\mathcal E_N=N/2+\frac{7\zeta(3)/(2\pi^2)-1}{2\ln2}+o(1),
+\qquad \operatorname{Var}(\log_2R_N)\longrightarrow
+0.892302571204274625294755\ldots.
+\]
+Section~\ref{sec:raw} evaluates the leading raw-mean coefficient and
+the positive limiting Jensen gap. The law itself is known; the dyadic
+identification, finite formulas and moment evaluations are stated
+separately, with their external hypotheses at the point of use.
 
 \paragraph{Source and priority boundary.}
 For Chen--Winterhof's detailed statements we use the explicitly identified
@@ -83,7 +108,7 @@ Ren--Winterhof's recent symmetric complexity \cite{RW} minimizes also
 over a reversed string and is a different random variable.
 
 \paragraph{Notation.}
-All logarithms in the proof are natural. The subscript in $R_N$ denotes
+Logarithms without a displayed base are natural; finite-string moments use base two. The subscript in $R_N$ denotes
 a length. When a parent modulus is $M=2^n$, abbreviate $R_M(r)=R_n(r)$;
 thus $R_{2M}$ denotes the child height $R_{n+1}$. Put
 \[
@@ -574,44 +599,728 @@ $\E\ln R_N\le(N/2)\ln2$ for every $N\ge2$, using parent length $n=N-1$.
 For $N=1$, both residues have height $1$. Divide by $\ln2$.
 \end{proof}
 
-\section{Scope, reproducibility and remaining questions}
-The theorem concerns the ordinary mean over all finite binary strings.
-It gives no upper bound for every prescribed infinite $2$-adic number
-and no statement about all Collatz trajectories.
-The variance part of \cite[Question~3.1]{LXC}, sharper constants, and
-extensions to other bases are not proved here.
+\section{The exact finite distribution}\label{sec:law}
+In the remaining sections $M=2^N$, $B=M/2$, and $R=R_N$.
+Write $C_M(T)=\#\{r:R(r)\le T\}$ and $S_M(T)=M-C_M(T)$.
+Thresholds in finite formulas are integers. Set $C_M(0)=0$ and
+$C_M(T)=M$ for $T\ge B$; a real threshold is handled by its floor.
+The conventions include $N=1$, when both heights are one.
 
-The structural ingredient is the compensation between the two dyadic
-lifts, followed by an upper bound in the actual odd completion class.
-B\'ezout, Minkowski, M\"obius inversion, Euler products, convexity and
-Tonelli are classical tools. The short count and high-valuation family
-have explicit antecedents credited above.
-The contribution is the exact mean bound and the estimates
-which close its sign. Priority remains a separate source question.
+\begin{theorem}\label{thm:finite}
+For $1\le T\le\lfloor\sqrt M\rfloor$, put
+\begin{align}
+P(T)&=\sum_{\substack{g\le T\\g\ \odd}}\mu(g)
+\lfloor T/g\rfloor\left\lceil\frac{\lfloor T/g\rfloor}{2}\right\rceil,
+\label{eq:positivecount}\\
+J_M(T)&=\sum_{\substack{b,d\le T\ \odd\\(b,d)=1}}
+\pos{\left\lfloor\frac{T-a_0}{b}\right\rfloor
+-\left\lceil\frac{M-bT-da_0}{bd}\right\rceil+1},\label{eq:collision}
+\end{align}
+where $0\le a_0<b$, $a_0d\equiv M\pmod b$, and $a_0=0$ for $b=1$.
+Then
+\begin{equation}\label{eq:centralCDF}
+C_M(T)=1+2P(T)-J_M(T).
+\end{equation}
+For $T^2\ge M$ and $T<B$, take all even $q$ with $2\le q<M/T$
+and all $1\le a<q$ with $(a,q)=1$. Write $v=a^{-1}\bmod q$ in
+$\{1,\ldots,q-1\}$, and set
+\begin{align}
+b_L&=v+q\left\lfloor\frac{T-v}{q}\right\rfloor,&
+b_R&=q-v+q\left\lfloor\frac{T-(q-v)}q\right\rfloor,\label{eq:neighbors}\\
+\alpha_{a,q}&=\frac{aMb_L-M+qT}{qb_L},&
+\beta_{a,q}&=\frac{aMb_R+M-qT}{qb_R}.\label{eq:holeends}
+\end{align}
+Then
+\begin{equation}\label{eq:highCDF}
+S_M(T)=\sum_{\substack{2\le q<M/T\\q\ \mathrm{even}}}
+\sum_{\substack{1\le a<q\\(a,q)=1}}
+\pos{\lceil\beta_{a,q}\rceil-\lfloor\alpha_{a,q}\rfloor-1}.
+\end{equation}
+The two ranges cover all integer thresholds and agree at a common
+square-root threshold. In particular,
+\begin{equation}\label{eq:mass}
+\Pr(R_N=t)=\frac{C_M(t)-C_M(t-1)}M,\qquad 1\le t\le B.
+\end{equation}
+\end{theorem}
 
-The companion consists of this standalone source, a rendered PDF,
-\path{companion/verify_mean.py}, \path{companion/finite_certificates.json}, a claim
-map and reproduction instructions. From the repository root run
-\begin{quote}\ttfamily
-python -B scripts/reproduce.py\\
+\begin{proof}
+The number of primitive pairs $1\le a,b\le T$, $b$ odd, is $P(T)$
+by odd-divisor M\"obius inversion. In each strict numerator-sign half,
+the map $(a,b)\mapsto ab^{-1}\bmod M$ is injective: a nonzero
+determinant has magnitude at most $TB_T<M$, where $B_T$ is the largest
+odd integer at most $T$. If $T^2=M$, $T$ is even and $B_T=T-1$.
+The numerator-zero primitive pair $(0,1)$ cannot collide with a
+nonzero numerator. A positive/negative collision is exactly
+\[
+ad+eb=M,\qquad 1\le a,e\le T,\quad b,d\le T\text{ odd}.
+\]
+The determinant is positive and less than $2M$. Every solution is
+automatically primitive and $(b,d)=1$, since a common odd divisor
+would divide $M$. Writing $a=a_0+bz$ gives
+$e=(M-da_0)/b-dz$. The conditions $1\le a,e\le T$ are precisely
+\[
+\frac{M-bT-da_0}{bd}\le z\le\frac{T-a_0}b:
+\]
+the lower bound forces $a>0$ and the upper bound forces $e>0$,
+because $M>TB_T$. Each sign half has at most one witness per residue,
+so inclusion--exclusion subtracts each collision once. This proves
+\eqref{eq:centralCDF}.
+
+For the high range, let $\mathcal F_T^{\odd}$ be the reduced fractions
+in $[0,1]$ with odd denominator at most $T$, including $0/1,1/1$.
+The exact interval model is
+\begin{equation}\label{eq:interval}
+R_N(r)\le T\quad\Longleftrightarrow\quad
+\frac rM\in\bigcup_{p/b\in\mathcal F_T^{\odd}}
+\left[\frac pb-\frac{T}{Mb},\frac pb+\frac{T}{Mb}\right].
+\end{equation}
+Indeed $a=rb-Mp$ gives $\gcd(a,b)=\gcd(p,b)$ because $(b,M)=1$;
+division by odd content preserves coverage. The endpoint fractions
+provide the wrap intervals $[0,T]$ and $[M-T,M-1]$ on the residue grid.
+No interior fraction wraps, since $T<M/2$.
+
+Here are the required Farey facts with their proof. For reduced
+$a/q$ with $q\le T$, take the largest $b\le T$ satisfying
+$ab\equiv1\pmod q$, and $p=(ab-1)/q$. Then $b>T-q$ and
+$ab-pq=1$. A fraction strictly between a determinant-one pair has
+positive integer coordinates in that pair, hence denominator at least
+$b+q>T$. Thus $p/b$ is the immediate Farey predecessor; the successor
+uses $ad\equiv-1\pmod q$. Endpoints follow directly. Consecutive
+denominators therefore sum to more than $T$ and have determinant one;
+they cannot both be even. Deleting even denominators leaves pairs
+that were full Farey neighbors or had exactly one deleted even
+fraction $a/q$ between them.
+
+Put $\lambda=T/M$, so $\lambda T\ge1$. Retained full-Farey neighbors
+with denominators $b,d$ have distance $1/(bd)$, less than
+$\lambda(1/b+1/d)$ because $b+d>T$. Their closed intervals overlap.
+Across a deleted even $a/q$, the immediate odd neighbor denominators
+are \eqref{eq:neighbors} and exceed $T-q$. If $\lambda q\ge1$ both
+intervals reach the center, leaving no hole. Hence only $qT<M$
+contributes; such $q$ satisfy $q<M/T\le T$ and occur in the sequence.
+
+When $qT<M$, every retained $p/b$ has determinant distance
+$\delta=|ab-pq|\ge1$. Its nearest endpoint on its side is at distance
+$(\delta-\lambda q)/(qb)$ from the center. Among determinant-one
+candidates, the largest denominator is best. Every $\delta\ge2$
+candidate, anywhere in the sequence, is worse, because
+\[
+\frac{\delta-\lambda q}{b}\ge\frac{2-\lambda q}{T}>\frac1T,
+\qquad \frac{1-\lambda q}{b_L},\frac{1-\lambda q}{b_R}<\frac1T.
+\]
+The latter follows from $T(1-\lambda q)\le T-q<b_L,b_R$.
+This global comparison excludes hidden coverage by broad intervals
+from more distant centers. The uncovered component is exactly
+\[
+\left(\frac aq-\frac{1-\lambda q}{qb_L},
+\frac aq+\frac{1-\lambda q}{qb_R}\right).
+\]
+It lies strictly inside its retained Farey gap. These components are
+disjoint and exhaust the uncovered set; endpoint gaps are already
+covered. Scaling by $M$ gives \eqref{eq:holeends}. An open interval
+$(\alpha,\beta)$ contains exactly
+$[\lceil\beta\rceil-\lfloor\alpha\rfloor-1]_+$ integers. Endpoints are
+covered, and $qT=M$ gives no hole. This proves \eqref{eq:highCDF}.
+Both formulas count the original event, so they agree where they
+overlap. Equation~\eqref{eq:mass} follows by subtraction.
+\end{proof}
+
+\begin{theorem}\label{thm:finitevariance}
+For $j=1,2$, the exact finite logarithmic moments and variance are
+\begin{align}
+m_{j,N}&=\frac1M\sum_{T=1}^{B-1}S_M(T)
+\big[(\log_2(T+1))^j-(\log_2T)^j\big],\label{eq:finitemoments}\\
+\operatorname{Var}(\log_2R_N)&=m_{2,N}-m_{1,N}^2.\label{eq:finitevariance}
+\end{align}
+Every coefficient is given by Theorem~\ref{thm:finite} using finite
+integer arithmetic, gcds, inverses, floors and ceilings.
+\end{theorem}
+\begin{proof}
+Telescope $(\log_2h)^j$ from height one for each integer $h\in[1,B]$.
+An increment at $T$ occurs exactly for residues with $R_N>T$.
+Averaging proves \eqref{eq:finitemoments}; the variance identity follows.
+For $N=1$ the empty sums give variance zero.
+\end{proof}
+These are finite arithmetic-logarithmic sums, not a statement that the
+variance is rational or has a short elementary formula in $N$.
+For $M=4$, the masses $3,1$ at heights $1,2$ give variance $3/16$.
+For $M=16$, masses $3,2,6,2,2,1$ at heights $1,2,3,4,5,8$ show
+gaps in the support. At $T=4$ the high hole is $(20/3,28/3)$,
+containing $7,8,9$; $qT=M$ produces no hole. The extreme heights
+at $r=M/2\pm1$, namely $M/4+1$ for $N>2$, are already recorded in
+Tian--Qi \cite[Lemma~8, p.~74]{TQ}; the unique top maximum is also
+recorded there \cite[Lemma~10, p.~77]{TQ}.
+
+\section{A batched histogram algorithm}\label{sec:algorithm}
+\begin{proposition}\label{prop:algorithm}
+The histogram of $R_N$ and the coefficients of
+\eqref{eq:finitemoments} can be assembled in $O(M\log M)=O(N2^N)$
+elementary arithmetic operations and $O(M)$ integer storage slots.
+Logarithm evaluation to a prescribed precision is separate.
+\end{proposition}
+\begin{proof}
+Put $L=\lfloor\sqrt M\rfloor$, $K=\lceil\sqrt M\rceil$.
+The new positive primitive boundary $p_t=P(t)-P(t-1)$ is
+\[
+p_1=1,\quad p_t=\phi(t)\ (t\ge2\text{ even}),\quad
+p_t=3\phi(t)/2\ (t\ge3\text{ odd}).
+\]
+For even $t$ only the numerator boundary enters, and all coprime
+residues modulo $t$ are odd. For odd $t$ the denominator boundary
+gives $\phi(t)$; the remaining numerator boundary gives $\phi(t)/2$
+by pairing $b$ with $t-b$. The corner is nonprimitive for $t>1$.
+A totient sieve supplies these values.
+
+Pass once through the ordered coprime odd pairs $(b,d)\le L$, solving
+\eqref{eq:collision} at $L$. Its real solution interval has length
+\[
+1-\frac{(L-b)(L-d)+(M-L^2)}{bd}<1;
+\]
+strictness at a square uses $b,d\le L-1$. There is at most one
+integer solution $(a,e)$ per pair. Put its event at
+$\tau=\max(a,e,b,d)$ and let $j_t$ count such events. The central
+masses are $\mathbf1_{t=1}+2p_t-j_t$, $1\le t\le L$: a collision
+is subtracted exactly when both witnesses have become available.
+For $N=1,2$, $L=B$ and this is the entire histogram.
+
+For $N\ge3$, $K<B$. Construct \eqref{eq:highCDF}'s open holes once,
+at $T=K$. Every survivor $R_N(r)>K$ has one hole about a reduced
+even fraction $a/q$. Put $d=|aM-qr|$, and let $u$ be the least
+positive residue of $a^{-1}\bmod q$ on the left (including equality),
+or $-a^{-1}\bmod q$ on the right. It is odd. With its side neighbor
+$b_0$ at $K$, membership gives
+\[
+db_0<M-qK,\qquad b_0>K-q,\qquad qK<M.
+\]
+Hence $q<K$, $d<K$ (if $d>0$, use $(M-qK)/(K-q)\le K$),
+$d^2<M$, and $x=M/(q+d)>b_0\ge u$.
+Positive consecutive members of $u+q\Z$ straddling $x$ are
+\[
+b_-=u+q\left\lfloor\frac{M-u(q+d)}{q(q+d)}\right\rfloor,
+\qquad b_+=b_-+q.
+\]
+Each gives an integral determinant-one witness of height
+$f(b)=\max(b,|M-db|/q)$, since $bd\equiv M\pmod q$.
+Below $x$ the function is $(M-db)/q$, decreasing or constant;
+above $x$ it equals $b$ up to $M/d$, after which both branches
+increase. Also $f(b_+)=b_+$: for $d>q$ use
+\[
+(d-q)(x+q)-M=\frac{q(d^2-q^2-2M)}{d+q}<0;
+\]
+for $d\le q$ this is immediate. Thus the progression minimum is
+\begin{equation}\label{eq:twocandidate}
+h=\min\{(M-db_-)/q,b_+\}.
+\end{equation}
+These witnesses imply $K<h\le f(b_0)\le M/q\le B$.
+For any integer $K\le T<h$, $qT<M$ and $T<b_+$, so the largest
+side denominator at threshold $T$ is at most $b_-$. Its numerator
+cost exceeds $T$. The residue remains inside this cusp's open hole;
+the global comparison in Theorem~\ref{thm:finite}'s proof excludes
+all other fractions. Hence $R_N(r)=h$. For $d=0$ this gives $M/q$.
+
+Insert each survivor at \eqref{eq:twocandidate}. If $K=L+1$, insert
+the bridge mass $M-S_M(K)-C_M(L)$ at $K$; if $K=L$ the central
+part already contains it. There is no skipped integer between $L$
+and $K$. Central residues, bridge and survivors exhaust $M$.
+There are $O(M)$ central pairs and initial even fractions.
+Gcds and inverses use $O(\log M)$ Euclidean arithmetic steps each.
+Cache the inverse once per cusp; at most $M$ surviving integers in
+disjoint holes then need constant arithmetic work each. Dense bins
+and cumulative sums need $O(M)$ additions and storage slots.
+\end{proof}
+This cost is exponential in $N$ and is not a bit-complexity theorem or
+a timing comparison with all alternatives. The companion's batched
+route uses no defining minimum oracle or all-threshold rescan.
+
+\section{The marked lattice limit}\label{sec:bridge}
+We prove the discrete-to-continuous bridge explicitly. All vectors are
+rows. Set
+\[
+G=\mathrm{SL}_2(\mathbb R),\quad
+\Delta=\Gamma^0(2)=\left\{\begin{pmatrix}a&b\\c&d\end{pmatrix}
+\in\mathrm{SL}_2(\Z):b\equiv0\pmod2\right\},\quad X=\Delta\backslash G,
+\]
+\[
+\mathcal A=\{(k,b)\in\Z^2:b\text{ odd}\},\quad
+\mathcal A_{\rm pr}=\{w\in\mathcal A:\gcd(w_1,w_2)=1\}.
+\]
+\[
+h(x)=\begin{pmatrix}1&0\\-x&1\end{pmatrix},\quad
+a(Q)=\operatorname{diag}(Q,Q^{-1}).
+\]
+The stabilizer of $\mathcal A$ and of its primitive subset is
+$\Delta$. The last coordinate of $(k,b)\gamma$ is
+$k\gamma_{12}+b\gamma_{22}$; preservation of both primitive parity
+classes forces $\gamma_{12}=0$, $\gamma_{22}=1$ modulo two, and these
+conditions suffice. Reduction modulo two shows index three.
+Use Haar probability $\mu_\Delta$ on $X$. The horocycle period is
+one, since $h(x)\in\Delta$ exactly for integral $x$.
+
+The external inputs are Heersink's continuous horosphere theorem
+\cite[\S2, pp.~3--4; Theorem~4, p.~7]{Heersink}, valid for every
+finite-index subgroup, and Howe--Moore
+\cite[Theorem~1.1, p.~2; Definition~2.6, p.~4]{Ciobotaru}.
+The first, in dimension one with source torus $\mathbb R/\mathbb Z$
+and both measures of mass one, gives
+\begin{equation}\label{eq:continuous}
+\int_0^1f(\Delta h(x)a(Q))dx\longrightarrow\int_Xf\,d\mu_\Delta
+\end{equation}
+for bounded continuous $f$; its joint form retains the source coordinate.
+The second applies to connected noncompact simple real Lie groups
+with finite center. Matrix coefficients of a strongly continuous
+unitary representation without invariant vectors vanish at infinity.
+No discrete marked theorem is imported. The following smearing argument
+uses the method of Marklof
+\cite[\S4, Proposition~9, equations~(4.8)--(4.13)]{MarklofSmall}.
+
+\begin{lemma}\label{lem:discrete}
+For $g_{M,r}=h(r/M)a(\sqrt M)$,
+$\nu_M=M^{-1}\sum_{r=0}^{M-1}\delta_{\Delta g_{M,r}}$ converges weakly
+to $\mu_\Delta$ as $N\to\infty$.
+\end{lemma}
+\begin{proof}
+Conjugation gives $g_{M,r}h(1)=g_{M,r+1}$, with the last point
+identified with the first. Thus $\nu_M$ is exactly invariant under
+$T:z\mapsto zh(1)$. Smearing gives the exact identity
+\begin{equation}\label{eq:smearing}
+\bar\nu_M:=\int_0^1\nu_M\cdot h(s)ds
+=\int_0^1\delta_{\Delta h(x)a(\sqrt M)}dx,
+\end{equation}
+by $x=(r+s)/M$. Thus $\bar\nu_M\Rightarrow\mu_\Delta$.
+Choose a compact $C$ of smeared mass at least $1-\varepsilon$ for
+all sufficiently large levels, and put
+$C'=\{zh(-s):z\in C,0\le s\le1\}$. This is compact and
+$\bar\nu_M(C)\le\nu_M(C')$. Adding the finitely many remaining
+supports proves tightness. The locally compact metrizable space $X$
+therefore admits subsequential probability limits.
+
+Since $-I\in\Delta$, the action factors through
+$\mathrm{PSL}_2(\mathbb R)$, satisfying the Howe--Moore hypotheses.
+The regular representation on $L^2_0(X,\mu_\Delta)$ is unitary and
+strongly continuous, with no invariant vectors: invariance under the
+transitive $G$ action forces a function to be constant almost everywhere.
+The elements $h(n)$ escape compact subsets; Howe--Moore gives mixing
+of $T$ for Haar probability, hence ergodicity.
+
+Let $\nu$ be a subsequential limit. Exact invariance passes to it.
+For bounded continuous tests, dominated convergence in $s$ gives
+\[
+\mu_\Delta=\int_0^1\nu\cdot h(s)ds.
+\]
+Each measure in this barycenter is $T$-invariant since $h(s)$ commutes
+with $h(1)$. Ergodic probabilities are extreme among invariant
+probabilities, so $\nu\cdot h(s)=\mu_\Delta$ almost everywhere.
+A countable determining family of tests gives a common full-measure
+set of such $s$. Continuity of the test integrals in $s$ extends
+equality to $s=0$. Therefore $\nu=\mu_\Delta$; tightness and uniqueness
+prove convergence.
+\end{proof}
+
+Let $B_t=[-t,t]\times(0,t]$ and let $Z(g)$ be the least
+$\max(|u|,v)$ among $(u,v)\in\mathcal A_{\rm pr}g$, $v>0$.
+It is positive, finite and attained. Discreteness gives positivity
+and attainment. For finiteness the coset $(0,1)g+2\Z^2g$ has finite
+covering radius, whereas the sector $v>0,|u|<v/2$ contains arbitrarily
+large disks. A coset point there has odd coefficient denominator;
+division by its odd content gives a primitive point in some $B_t$.
+The void set $W_t=\{\Delta g:\mathcal A_{\rm pr}g\cap B_t=\varnothing\}$
+is a Haar continuity set. Locally bounded inverses restrict possible
+hits in the compact closure of $B_t$ to finitely many integer rows,
+none approaching zero. Discontinuity requires an image on a face,
+including $v=0$. For a fixed nonzero row $w$, the map $g\mapsto wg$
+is a submersion onto $\mathbb R^2\setminus\{0\}$. Preimages of
+planar-null faces are Haar-null; countable union and passage to the
+discrete quotient preserve nullity.
+Finally,
+\[
+(k,b)g_{M,r}=((Mk-rb)/\sqrt M,b/\sqrt M).
+\]
+With $a=rb-Mk$ this identifies the box event exactly with
+$R_N\le t\sqrt M$. The equality $\gcd(k,b)=\gcd(a,b)$ and odd-content
+division preserve the congruence and mark. Lemma~\ref{lem:discrete}
+and the continuity-set theorem yield
+\begin{equation}\label{eq:weakR}
+Z_N:=R_N/\sqrt M\ \Rightarrow\ Z,\qquad
+\Pr(Z>t)=\mu_\Delta(W_t).
+\end{equation}
+
+\section{Identification with the published Boca--Gologan law}\label{sec:BG}
+The geometric law is already published. We identify its model and
+scale; its authors did not assert a finite binary-string theorem.
+Set
+\[
+U=\begin{pmatrix}1&1\\-1&0\end{pmatrix},\quad
+\mathcal S=\{(q,a)\in\Z^2:q-a\text{ odd}\},\quad H=U^{-1}\Delta U.
+\]
+Since $(k,b)U=(k-b,k)$, $\mathcal A U=\mathcal S$. The map
+$\Delta g\mapsto H U^{-1}g$ preserves Haar probability and the
+marked void events. For
+$J=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$ and
+$D_t=\operatorname{diag}(t,t^{-1})$,
+\[
+B_tJD_t=(0,t^2]\times[-1,1]=:C_{t^2}.
+\]
+Right Haar invariance gives
+\begin{equation}\label{eq:squarelaw}
+\Pr(Z>t)=\mu_H\{Hg:\mathcal Sg\cap C_{t^2}=\varnothing\}.
+\end{equation}
+Primitivity can be omitted: marked vectors have odd content, and
+division contracts these origin-centered windows.
+
+For slopes $u\in[0,1]$, put
+\[
+g_\epsilon(u)=\begin{pmatrix}1&-u\\0&1\end{pmatrix}
+\operatorname{diag}(\epsilon,\epsilon^{-1}).
+\]
+A row $(q,a)$ maps to $(\epsilon q,(a-qu)/\epsilon)$.
+The void event in $C_\lambda$ is survival past horizontal distance
+$\lambda/\epsilon$ against vertical segments of half-length $\epsilon$
+at $(q,a)$, $q-a$ odd, starting at the omitted origin. This is BG's
+modulus-two model \cite[Theorem~1.1(i), p.~1045; definition, p.~1044]{BG}.
+Its parameter is $\epsilon q$, not $2\epsilon q$.
+
+We identify BG's angular average with Haar. Work first on
+$\Gamma(2)\backslash G$, whose horocycle period is two.
+$\Gamma(2)\subset H$ and $[H:\Gamma(2)]=2$; projection preserves
+probability Haar. Conjugation by $J$ normalizes $\Gamma(2)$ and
+\[
+J^{-1}h(x)a(\epsilon^{-1})J
+=\begin{pmatrix}1&x\\0&1\end{pmatrix}
+\operatorname{diag}(\epsilon,\epsilon^{-1}).
+\]
+Use the two-periodic weight
+$w(x)=8\mathbf1_{[-1,0]}(x)/(\pi(1+x^2))$, of mass one for $dx/2$.
+The joint Heersink theorem with this finite-index subgroup and $x=-u$
+gives
+\begin{equation}\label{eq:angularHaar}
+\lim_{\epsilon\to0}\frac4\pi\int_0^1
+\mathbf1_{\mathcal Sg_\epsilon(u)\cap C_\lambda=\varnothing}
+\frac{du}{1+u^2}
+=\mu_H\{\mathcal Sg\cap C_\lambda=\varnothing\}.
+\end{equation}
+The bounded weight is $L^1$-approximable; the void boundary is
+Haar-null by the submersion argument. Joint continuous-test
+equidistribution therefore extends to this event and weight. We do
+not assume equidistribution on an unweighted half-period.
+
+BG's theorem gives, for intervals $I\subset[0,1]$ of length comparable
+to $\epsilon^c$, angular survival
+$c_I G_2(\lambda)+O_{\delta,\lambda,2}(\epsilon^{\theta-\delta})$,
+where $c_I=\int_Idu/(1+u^2)$ and
+$\theta=\min(c+c_1,1/2-2c_1)$. Partition into
+$\lceil\epsilon^{-1/8}\rceil$ equal cells; choose $c=c_1=1/8$ and
+$0<\delta<1/8$. The uniform interval error sums to
+$O(\epsilon^{1/8-\delta})\to0$, and $\sum c_I=\pi/4$.
+Consequently
+\begin{equation}\label{eq:BGlaw}
+\boxed{\Pr(Z>t)=G_2(t^2).}
+\end{equation}
+This fixed-$\lambda$ source estimate identifies the law and gives no
+rate for the dyadic sample.
+
+The specialization of the published survival is
+\begin{equation}\label{eq:G2}
+G_2(x)=\begin{cases}
+1-8x/\pi^2,&0<x\le1/2,\\
+1-6x/\pi^2+2H_2(x)/\pi^2,&1/2\le x\le1,\\
+4H_3(x)/\pi^2,&x\ge1,
+\end{cases}
+\end{equation}
+\begin{align*}
+H_2(x)&=3x-2+\zeta(2)-(\ln x)^2
++2(1-x)\ln(1/x-1)-2\operatorname{Li}_2(x),\\
+H_3(x)&=\operatorname{Li}_2(1/x)-(x-1)\ln(1-1/x)-1.
+\end{align*}
+Products at singular endpoints are interpreted continuously.
+Differentiation gives the density of $\Lambda=Z^2$:
+\begin{equation}\label{eq:density}
+g_2(x)=\begin{cases}
+8/\pi^2,&0<x<1/2,\\
+\dfrac4{\pi^2x}\left[1-(1-x)\ln\dfrac{1-x}{x}\right],&1/2<x<1,\\
+\dfrac4{\pi^2x}\left[1+(x-1)\ln(1-1/x)\right],&x>1.
+\end{cases}
+\end{equation}
+The tail sign follows by differentiating $H_3$; the opposite sign in
+BG's density display on p.~1069 is a typographical error. We import
+the survival and derive the density.
+
+\section{Logarithmic moments and limiting variance}\label{sec:moments}
+\begin{lemma}\label{lem:tails}
+Uniformly in $N$, for $z>0$,
+\[
+\Pr(Z_N\le z)\le\min(1,3z^2),\qquad
+\Pr(Z_N>z)\le\min(1,4z^{-2}).
+\]
+\end{lemma}
+\begin{proof}
+For $X\ge1$, the number of pairs with $|a|\le X$, odd $1\le b\le X$
+is at most $(2\lfloor X\rfloor+1)\lceil\lfloor X\rfloor/2\rceil
+\le3X^2$. Each pair determines one residue. Below one the event is empty.
+
+For the upper tail let $\lambda(r)$ be the shortest Euclidean vector
+length in the full congruence lattice $\Lambda_r$. A complete
+Gauss-reduced basis $u,v$ satisfies
+$\|u\|\le\|v\|$, $2|u\cdot v|\le\|u\|^2$.
+First order a basis so that $\|u\|\le\|v\|$. If the scalar-product
+inequality fails, replace $v$ by $v-ku$, where $k$ is a nearest integer
+to $(u\cdot v)/\|u\|^2$, and reorder. Each such subtraction strictly
+decreases the positive integer sum of squared norms; swaps leave it
+unchanged. Thus the process terminates at the two displayed inequalities.
+They imply that $u$ is shortest. For $ku+tv$ the
+cases $t=0$, $|t|=1$ follow from the scalar-product bound; for
+$|t|\ge2$ the perpendicular component has length at least
+$2M/\|u\|\ge\|u\|$. Indeed the reduced angle has sine at least
+$\sqrt3/2$, so $\|u\|\|v\|\le2M/\sqrt3$.
+Thus $\|u\|=\lambda(r)$. The denominators of the basis generate
+$\Z$, so one is odd and its height is at most $\|v\|$. Hence
+$R_N(r)\le2M/(\sqrt3\lambda(r))$.
+
+For $1\le Y<M$, a nonzero vector of length at most $Y$ cannot be
+horizontal; orient its denominator $1\le b\le\lfloor Y\rfloor$.
+For $g=\gcd(b,M)$ the congruence has
+$g(2\lfloor Y/g\rfloor+1)$ incidences with residues. Summing gives
+at most $3Y\lfloor Y\rfloor\le3Y^2$. This includes even denominators
+and nonprimitive vectors. If $R_N>X$, then
+$\lambda(r)<2M/(\sqrt3X)$. When $4M/X^2<1$ this cutoff is less
+than $M$; below one the event is empty, otherwise the incidence bound
+gives at most $4M^2/X^2$ residues. In the remaining range the
+probability bound one suffices. Set $X=z\sqrt M$.
+\end{proof}
+
+\begin{theorem}\label{thm:limit}
+Put $\ell=\ln2$, $L_4=\operatorname{Li}_4(1/2)$ and
+\begin{align*}
+Q={}&4\zeta(4)+3\zeta(2)-\tfrac74\zeta(3)
++\tfrac12\zeta(2)\ell^2-\tfrac74\ell\zeta(3)-\tfrac1{12}\ell^4-2L_4,\\
+\eta_1={}&\frac{7\zeta(3)}{2\pi^2}-1,\qquad \eta_2=\frac4{\pi^2}Q.
+\end{align*}
+Then
+\begin{align}
+\E\log_2R_N&=N/2+c_R+o(1),&c_R&=\frac{\eta_1}{2\ell},\label{eq:asymmean}\\
+\operatorname{Var}(\log_2R_N)&\longrightarrow\sigma_R^2,&
+\sigma_R^2&=\frac{\eta_2-\eta_1^2}{4\ell^2}.\label{eq:asymvariance}
+\end{align}
+Exact rational enclosures are
+\begin{align*}
+-0.413852654438430019863271&\le c_R\le-0.413852654438430019863270,\\
+0.892302571204274625294755&\le\sigma_R^2\le0.892302571204274625294756.
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+We evaluate $\eta_j=\int_0^\infty(\ln x)^jg_2(x)dx$.
+For $h=1/2$ define
+\[
+A_j=\int_h^1(\ln x)^j\ln(1-x)\frac{dx}x,\quad
+B_j=\int_h^1(\ln x)^j\ln(1-x)dx,
+\]
+\[
+E_j=\int_h^1(\ln x)^j\frac{dx}x=\frac{(-1)^j\ell^{j+1}}{j+1},
+\qquad D_j=\int_h^1(\ln x)^jdx.
+\]
+The middle contribution, multiplied by $\pi^2/4$, is
+$M_j=E_j-A_j+B_j+E_{j+1}-D_{j+1}$.
+Directly differentiable primitives for $A_0,A_1,A_2$ are
+\[
+-\operatorname{Li}_2(x),\quad
+-\ln x\operatorname{Li}_2(x)+\operatorname{Li}_3(x),\quad
+-(\ln x)^2\operatorname{Li}_2(x)+2\ln x\operatorname{Li}_3(x)
+-2\operatorname{Li}_4(x).
+\]
+With $L_j=\operatorname{Li}_j(1/2)$ this gives
+\[
+A_0=-\zeta(2)+L_2,\quad A_1=\zeta(3)-\ell L_2-L_3,
+\quad A_2=-2\zeta(4)+\ell^2L_2+2\ell L_3+2L_4.
+\]
+Integration by parts with the primitive
+$V(x)=(1-x)(1-\ln(1-x))$ of $\ln(1-x)$ gives
+\begin{align*}
+B_0&=-(\ell+1)/2,\\
+B_1&=1+\ell^2/2+A_0,\\
+B_2&=-\ell^2(1+\ell)/2-2E_1+2D_1+2A_1-2B_1.
+\end{align*}
+The elementary values needed are
+$D_1=(\ell-1)/2$, $D_2=1-\ell-\ell^2/2$ and
+$D_3=-3+3\ell+3\ell^2/2+\ell^3/2$.
+
+The half-values in the simplification are
+\[
+L_2=\zeta(2)/2-\ell^2/2,\qquad
+L_3=7\zeta(3)/8-\zeta(2)\ell/2+\ell^3/6.
+\]
+Dilogarithm reflection
+$\operatorname{Li}_2(x)+\operatorname{Li}_2(1-x)
+=\zeta(2)-\ln x\ln(1-x)$ follows by differentiation and $x\to0$.
+The same argument gives
+$\operatorname{Li}_2(-x/(1-x))=-\operatorname{Li}_2(x)-\ln^2(1-x)/2$.
+These identities verify the derivative of
+\begin{align*}
+\operatorname{Li}_3(x)+\operatorname{Li}_3(-x/(1-x))
++\operatorname{Li}_3(1-x)
+={}&\zeta(3)+\zeta(2)\ln(1-x)\\
+&-\tfrac12\ln x\ln^2(1-x)+\tfrac16\ln^3(1-x).
+\end{align*}
+Both sides tend to $\zeta(3)$ at zero. At $x=1/2$,
+$\operatorname{Li}_3(-1)=-3\zeta(3)/4$ from its absolutely convergent
+alternating series, which proves the $L_3$ value.
+Substitution now yields
+\begin{align*}
+M_0&=\zeta(2)/2,\\
+M_1&=\ell-\zeta(2)/2-\zeta(3)/8,\\
+M_2&=2\zeta(4)+\zeta(2)+\zeta(3)/4-2\ell-\ell^2
++\zeta(2)\ell^2/2\\
+&\hspace{12mm}-7\ell\zeta(3)/4-\ell^4/12-2L_4.
+\end{align*}
+On $(0,1/2)$ the normalized contributions are
+$1,-\ell-1,\ell^2+2\ell+2$ for $j=0,1,2$.
+On $x>1$ the density has the positive expansion
+\[
+g_2(x)=\frac4{\pi^2}\sum_{n\ge1}\frac{x^{-n-1}}{n(n+1)}.
+\]
+Tonelli and $\int_1^\infty(\ln x)^jx^{-n-1}dx=j!/n^{j+1}$ give
+normalized tail contributions $\zeta(2)-1$,
+$\zeta(3)-\zeta(2)+1$, and $2(\zeta(4)-\zeta(3)+\zeta(2)-1)$.
+Adding and multiplying by $4/\pi^2$ proves $\eta_0=1$ and the
+stated $\eta_1,\eta_2$. Log powers are absolutely integrable at zero;
+the positive expansion justifies their tail integrals. No quadrature
+is needed.
+
+For transfer let $Y_N=\ln Z_N$.
+Lemma~\ref{lem:tails} gives $\Pr(|Y_N|>T)\le7e^{-2T}$ for $T\ge0$.
+Layer cake, including the boundary term, gives
+\[
+\E[Y_N^2\mathbf1_{|Y_N|>T}]
+\le7(T^2+T+1/2)e^{-2T}\longrightarrow0
+\]
+uniformly in $N$. Thus \eqref{eq:weakR} transfers both log moments:
+$\E Y_N\to\eta_1/2$, $\E Y_N^2\to\eta_2/4$, since $\Lambda=Z^2$.
+As $\log_2R_N=N/2+Y_N/\ell$, subtracting the squared mean proves
+\eqref{eq:asymmean}--\eqref{eq:asymvariance}. The square parameter
+accounts for the factor four in the variance denominator.
+
+For the enclosures use Euler-transformed eta, $p=2,3,4$:
+\[
+(1-2^{1-p})\zeta(p)=\sum_{k\ge0}\frac{\Delta^ka_0}{2^{k+1}},
+\quad a_n=(n+1)^{-p},\quad\Delta a_n=a_n-a_{n+1}.
+\]
+Indeed $\Delta^ka_0=\frac1{(p-1)!}\int_0^1(1-x)^k(-\ln x)^{p-1}dx$
+lies in $(0,1]$; the positive geometric sum gives the eta integral
+with factor $1/(1+x)$. Its tail after $96$ terms is in $[0,2^{-96}]$.
+Use $40$ terms of $\ell=2\sum_{j\ge0}3^{-2j-1}/(2j+1)$ with
+remainder at most $9/[4\cdot81\cdot3^{81}]$, and $96$ terms of
+$L_4=\sum_{k\ge1}2^{-k}/k^4$ with remainder at most $2^{-96}/97^4$.
+Set $\pi^2=6\zeta(2)$ exactly. Finite differences and interval
+operations are rational; products use all four endpoint products,
+squares handle zero when necessary and divisors exclude zero.
+Floor/ceiling rounding to $10^{24}$ gives the displayed endpoints,
+reproduced by \path{companion/limit_constants.py}. This certifies
+evaluation of the expression conditional on the analytic theorem
+and its named external imports.
+\end{proof}
+
+\section{The raw mean and the Jensen gap}\label{sec:raw}
+\begin{proposition}\label{prop:raw}
+For $c_{\rm raw}=32\ln(1+\sqrt2)/(3\pi^2)$,
+\[
+\E R_N\sim c_{\rm raw}2^{N/2},\qquad
+\log_2\E R_N-\E\log_2R_N\longrightarrow\log_2c_{\rm raw}-c_R>0.
+\]
+\end{proposition}
+\begin{proof}
+Including the boundary term, Lemma~\ref{lem:tails} gives
+\[
+\E[Z_N\mathbf1_{Z_N>K}]
+=K\Pr(Z_N>K)+\int_K^\infty\Pr(Z_N>t)dt\le8/K.
+\]
+Thus $\E Z_N\to\E Z$. From \eqref{eq:density}, the three contributions
+to $(\pi^2/4)\E Z$ are
+\[
+A=\sqrt2/3,\quad B=\int_{1/2}^1x^{-1/2}[1-(1-x)\ln((1-x)/x)]dx,
+\]
+\[
+C=\int_1^\infty x^{-1/2}[1+(x-1)\ln(1-1/x)]dx.
+\]
+For $B$ substitute $y=\sqrt x$. A directly differentiable primitive is
+\[
+F(y)=\frac{2y}3-2\left(y-\frac{y^3}3\right)
+\ln\frac{1-y^2}{y^2}-\frac83\operatorname{atanh}y.
+\]
+The singular terms cancel at one:
+$F(1)=2/3-(8/3)\ln2$. For $a=1/\sqrt2$,
+$F(a)=2a/3-(8/3)\operatorname{atanh}a$.
+Positive tail expansion and Tonelli give
+\[
+C=\sum_{n\ge1}\frac1{n(n+1)(n-1/2)}=\frac83\ln2-\frac23.
+\]
+For this equality sum the partial fractions
+$-2/n+2/[3(n+1)]+4/[3(n-1/2)]$ with a common finite cutoff, using
+$\sum_{n=1}^K(n-1/2)^{-1}=2H_{2K}-H_K$.
+Since $A=2a/3$, the sum is $(8/3)\operatorname{atanh}(1/\sqrt2)
+=(8/3)\ln(1+\sqrt2)$, proving the coefficient.
+Combine with \eqref{eq:asymmean} for the gap. Strict Jensen applies
+to the nonconstant limiting law, whose positive mean and integrable
+logarithm have been proved. There is no positive gap bound at every
+finite length: $N=1$ has gap zero.
+\end{proof}
+
+Fractional free-path moments have a methodological antecedent in
+Boca--Gologan--Zaharescu
+\cite[Theorem~1.1, p.~304; Theorem~1.2 and Corollary~1.3, p.~305]{BGZ}.
+Marklof provides the logarithmic-moment and complex-transform lineage
+\cite{MarklofLog}. These models differ from the dyadic ensemble here;
+we import neither their coefficients nor their convergence rates.
+Tian--Qi discuss the two means and gap \cite[p.~78, Table~1]{TQ}.
+
+\section{Scope and reproducibility}\label{sec:scope}
+The exact mean inequality, finite law and variance formula, and
+evaluated limiting variance are distinct results. The large-length
+mean proof is closed by analytic estimates and its stated finite
+premises. The limiting results use named dynamics theorems and the
+published BG law, with uniform integrability proved here. A finite
+sweep proves neither equidistribution nor an asymptotic theorem.
+We claim no rate, short elementary formula in $N$, bit complexity,
+raw-height variance formula, or consequence for a prescribed infinite
+$2$-adic value or Collatz trajectories.
+
+The standalone source, PDF and companion accompany this article.
+The \href{https://github.com/aconsciousfractal/FCIG-Exact-Mean-Bound-for-the-Rational-Complexity-of-Binary-Strings}{project repository}
+provides the public reproduction entry point.
+This is a substantial revision of the preceding mean-only article.
+The companion includes claim and reproduction maps and these files:
+\begin{itemize}
+\item \path{companion/verify_mean.py} and
+\path{companion/finite_certificates.json};
+\item \path{companion/distribution.py} and \path{companion/exact_logs.py};
+\item \path{companion/verify_distribution.py};
+\item \path{companion/distribution_certificates.json};
+\item \path{companion/limit_constants.py}.
+\end{itemize}
+From the repository root run
+\begin{verbatim}
+python -B scripts/reproduce.py
 python -B -O scripts/reproduce.py
-\end{quote}
-The two runs must produce the same deterministic mathematical JSON.
-The checker verifies level coverage, witnesses and minima, exact products,
-directed-log sums, populations and margins, with explicit failures that
-remain active under Python optimization.
-It checks only the finite premises; reading the lemmas above is necessary
-to assess the all-length proof.
-The source compiles independently of the research reports and bibliography
-databases.
+python -B scripts/reproduce_distribution.py
+python -B -O scripts/reproduce_distribution.py
+python -B scripts/reproduce_constants.py
+python -B -O scripts/reproduce_constants.py
+\end{verbatim}
+Normal and optimized runs must give identical deterministic mathematical
+JSON. The mean checker verifies the finite premises in
+Section~\ref{sec:finite}; the distribution checker compares a fixed
+finite panel and exact logarithm endpoints; the constants checker
+evaluates the symbolic expression by rational intervals. These checks
+establish implementation and certificate consistency, not universal
+priority or formal proof. All scientific arguments are present in this
+source: no unpublished research note or bibliography database is needed.
 
-\paragraph{AI assistance.}
-OpenAI GPT models assisted mathematical exploration, proof criticism,
-source comparison, editing and reproducibility checks.
-The AI review passes shared exposure to the research material; they do
-not constitute independent human peer review or formal verification.
-The author retains responsibility for the arguments and attributions.
-
+\paragraph{AI assistance and source limits.}
+OpenAI GPT models assisted exploration, proof criticism, source
+comparison, editing and reproducibility checks. AI reviews shared
+exposure to the research material; they are not independent human peer
+review or formal verification. The author retains responsibility for
+arguments and attributions. The final Chen--Winterhof body remains
+uninspected as stated in the introduction; absence of an identified
+antecedent is not certification of priority.
 \appendix
 \section{Directed logarithms using integer arithmetic}\label{app:logs}
 We specify the rounding used in \eqref{eq:bridge}.
@@ -648,7 +1357,48 @@ that an upward-rounded approximation of $z$ still equals $z$.
 This proves the directed inequalities used by every summand of the
 finite bridge.
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
+\bibitem{BG}
+F. P. Boca and R. N. Gologan,
+On the distribution of the free path length of the linear flow in a honeycomb,
+\emph{Annales de l'Institut Fourier} \textbf{59}(3) (2009), 1043--1075.
+\href{https://doi.org/10.5802/aif.2457}{doi:10.5802/aif.2457}.
+\href{https://www.numdam.org/item/10.5802/aif.2457.pdf}{Published full text}.
+Theorem~1.1(i), p.~1045, and model/parameter definitions, p.~1044.
+\bibitem{Heersink}
+\begingroup\raggedright
+B. Heersink,
+Equidistribution of Farey sequences on horospheres in covers,
+arXiv:1712.03258v2.
+\href{https://arxiv.org/abs/1712.03258v2}{arXiv version 2}.
+Definitions in \S2, pp.~3--4, and Theorem~4, p.~7 of the identified text.
+\par\endgroup
+\bibitem{Ciobotaru}
+C. Ciobotaru,
+A unified proof of the Howe--Moore property,
+arXiv:1403.0223v2.
+\href{https://arxiv.org/abs/1403.0223v2}{arXiv version 2}.
+Theorem~1.1, p.~2, and Definition~2.6, p.~4.
+The classical antecedent is R. Howe and C. C. Moore,
+Asymptotic properties of unitary representations,
+\emph{Journal of Functional Analysis} \textbf{32} (1979), 72--96,
+\href{https://doi.org/10.1016/0022-1236(79)90078-8}{doi:10.1016/0022-1236(79)90078-8}.
+\bibitem{MarklofSmall}
+J. Marklof,
+Smallest denominators, arXiv:2310.11251v2.
+\href{https://arxiv.org/abs/2310.11251v2}{arXiv version 2}.
+\S4, Proposition~9, equations~(4.8)--(4.13).
+\bibitem{MarklofLog}
+J. Marklof,
+The log moments of smallest denominators,
+\emph{Integers} \textbf{24} (2024), A55.
+\href{https://math.colgate.edu/~integers/y55/y55.pdf}{Published full text}.
+\bibitem{BGZ}
+F. P. Boca, R. N. Gologan and A. Zaharescu,
+The average length of a trajectory in a certain billiard in a flat two-torus,
+\emph{New York Journal of Mathematics} \textbf{9} (2003), 303--330.
+\href{https://nyjm.albany.edu/j/2003/9-16p.pdf}{Published full text}.
+Theorem~1.1, p.~304, Theorem~1.2 and Corollary~1.3, p.~305.
 \bibitem{TQ}
 T. Tian and W.-F. Qi,
 Expected values for the rational complexity of finite binary sequences,

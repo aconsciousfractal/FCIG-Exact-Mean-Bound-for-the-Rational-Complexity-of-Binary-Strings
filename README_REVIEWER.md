@@ -1,33 +1,41 @@
 # Reviewer path
 
-## Ten minutes
+## First reading
 
-Read the paper's definition and main theorem, [claim map](docs/CLAIM_MAP.md),
-[source comparison](docs/SOURCES.md) and [limits](docs/KNOWN_LIMITS.md).
-Check that the average includes all residues, the denominator is odd, and the
-logarithm is unrounded.
+Read the definition and result statements, [claim map](docs/CLAIM_MAP.md),
+[sources](docs/SOURCES.md) and [limits](docs/KNOWN_LIMITS.md).
+Check all-residue weighting, positive odd denominator, max-height and unrounded
+base-two logarithms. Separate finite and limiting assertions.
 
-## Proof review
+## Proof checks
 
-Read Sections 2–5 for the two-lift product, the actual odd completion class,
-the lattice-sum estimate and the analytic cutoff. Section 6 and Appendix A
-connect those estimates to the exact finite certificate arithmetic.
-The original length $N=1$ is separate; parent lengths 1–12, 13–25 and at least
-26 correspond to child lengths 2–13, 14–26 and at least 27. There is no gap.
+The exact-mean proof uses two lifts, the actual odd completion class, a lattice
+sum and an analytic cutoff. Parent ranges1-12,13-25,at least26 correspond to
+child lengths2-13,14-26,at least27; original length1 is separate.
 
-## Replay
+For the finite distribution, check primitive counts, determinant collisions,
+strict even-cusp cutoff, open grid endpoints and the square-root splice.
+Then verify the layer-cake moment identity.
 
-Run the commands in [REPRODUCE.md](REPRODUCE.md). A full replay checks 8,190
-minima and recomputes 9,068,656 positive primitive pairs with directed integer
-logarithms. A second run under Python optimization must return identical JSON.
-The seven built-in negative controls reject missing or duplicate levels, a bad
-witness, wrong height, changed margin, population drift and a false certificate flag.
+For the limit, check row-vector/parity normalization, exact time-one
+invariance and smearing, tightness, mixing and the ergodic-extreme argument.
+The marked conjugation and weighted full-period identification must precede
+application of the known Boca-Gologan law.
 
-Check [MANIFEST_SHA256.txt](MANIFEST_SHA256.txt) with
-`python -B scripts/check_manifest.py`.
-Verification works from an extracted archive or a normal working copy containing
-`.git`; it does not require clean Git state.
+For moments, check the parameter square and factor four in variance,
+positive tail expansion, intermediate primitives and uniform integrability
+including its boundary term. Raw mean/Jensen are corollaries.
+Algorithm complexity concerns the standalone route, not its defining oracle.
 
-The manuscript contains the all-length argument. Finite replay alone neither
-proves that analytic argument nor certifies originality.
-[AI_USE.md](AI_USE.md) describes the role of AI assistance.
+## Replay and identity
+
+Follow [REPRODUCE.md](REPRODUCE.md): mean replay checks8,190 minima/9,068,656
+primitive pairs; distribution replay recomputes eleven histograms and moments
+with a510-residue oracle; constant replay encloses the closed expressions.
+Normal/-O must agree and all guards remain active.
+
+[MANIFEST_SHA256.txt](MANIFEST_SHA256.txt) is checked by scripts/check_manifest.py,
+in an extracted archive or a working copy containing .git, without requiring
+clean Git state. The manuscript supplies the proofs; finite replay and rational
+evaluation do not certify originality or independent human review.
+[AI-use disclosure](AI_USE.md).

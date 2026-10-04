@@ -1,4 +1,4 @@
-name: Exact finite premises
+name: Exact finite premises and moments
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
@@ -16,5 +16,13 @@ jobs:
       - run: python -B -O scripts/reproduce.py --output build/optimized.json
       - name: Compare deterministic replay outputs
         run: python -c "from pathlib import Path; import sys; sys.exit(0 if Path('build/normal.json').read_bytes() == Path('build/optimized.json').read_bytes() else 1)"
+      - run: python -B scripts/reproduce_distribution.py --output build/distribution-normal.json
+      - run: python -B -O scripts/reproduce_distribution.py --output build/distribution-optimized.json
+      - name: Compare deterministic distribution outputs
+        run: python -c "from pathlib import Path; import sys; sys.exit(0 if Path('build/distribution-normal.json').read_bytes() == Path('build/distribution-optimized.json').read_bytes() else 1)"
+      - run: python -B scripts/reproduce_constants.py --output build/constants-normal.json
+      - run: python -B -O scripts/reproduce_constants.py --output build/constants-optimized.json
+      - name: Compare deterministic constant outputs
+        run: python -c "from pathlib import Path; import sys; sys.exit(0 if Path('build/constants-normal.json').read_bytes() == Path('build/constants-optimized.json').read_bytes() else 1)"
       - run: python -B -m unittest discover -s tests -v
       - run: python -B -O -m unittest discover -s tests -v
